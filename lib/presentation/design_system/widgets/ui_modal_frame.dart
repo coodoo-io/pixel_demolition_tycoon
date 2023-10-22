@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 class UiModelFrame extends StatelessWidget {
   const UiModelFrame({
@@ -49,7 +48,7 @@ class UiModelFrame extends StatelessWidget {
                       Icons.close,
                       size: 40,
                     ),
-                    onPressed: () => context.pop(),
+                    onPressed: () => Navigator.of(context).pop(),
                   ),
                 ),
                 Positioned.fill(top: 20, child: child),

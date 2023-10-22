@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:pixel_demolition_tycoon/common/translation/translation.extension.dart';
 import 'package:pixel_demolition_tycoon/presentation/design_system/widgets/ui_secondary_button.dart';
 
@@ -47,7 +46,7 @@ class UiModal {
         UiSecondaryButton(
           child: Text(context.translations.common_ok),
           onPressed: () {
-            context.pop();
+            Navigator.of(context).pop();
           },
         ),
       ],
