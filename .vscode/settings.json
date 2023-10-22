@@ -1,0 +1,24 @@
+{
+    "dart.lineLength": 120,
+    "dart.previewFlutterUiGuides": true,
+    "[dart]": {
+        "editor.codeActionsOnSave": {
+            "source.fixAll": true
+        },
+        "editor.rulers": [
+            120
+        ]
+    },
+    "files.exclude": {
+        "**/*.freezed.dart": true,
+        "**/*.g.dart": true
+    },
+    // "explorer.fileNesting.patterns": {
+    //     "*.dart": "${capture}.g.dart"
+    // },
+    // "explorer.fileNesting.enabled": true,
+    // "explorer.fileNesting.expand": false,
+    "files.associations": {
+        "*.drift": "sql"
+    }
+}

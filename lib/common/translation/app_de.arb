@@ -1,0 +1,6 @@
+{
+    "common_ok": "OK",
+    "common_weblink_error_msg": "Fehler beim Aufrufen der Webseite",
+    "common_default_error_message": "Ups, die Daten dieser Seite konnten nicht geladen werden! Bitte versuchen Sie es später nochmal.",
+    "screen_dashboard_title": "Dashboard"
+}

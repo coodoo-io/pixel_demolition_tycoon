@@ -1,0 +1,25 @@
+{
+	"Freezed DataZ": {
+		"prefix": "fdatacl",
+		"body": [
+			"import 'package:freezed_annotation/freezed_annotation.dart';",
+			"part '${TM_FILENAME_BASE}.freezed.dart';",
+			"part '${TM_FILENAME_BASE}.g.dart';",
+			"",
+			"@freezed",
+			"class ${TM_FILENAME_BASE/(.*)/${1:/pascalcase}/g} with _$${TM_FILENAME_BASE/(.*)/${1:/pascalcase}/g}{",
+			"  const factory ${TM_FILENAME_BASE/(.*)/${1:/pascalcase}/g}(${1}) = _${TM_FILENAME_BASE/(.*)/${1:/pascalcase}/g};",
+			"  factory ${TM_FILENAME_BASE/(.*)/${1:/pascalcase}/g}.fromJson(Map<String, dynamic> json) => _$${TM_FILENAME_BASE/(.*)/${1:/pascalcase}/g}FromJson(json);",
+			"}"
+		],
+		"description": "Freezed Union"
+	},
+	"Part": {
+		"prefix": "prtg",
+		"body": [
+			"part '${TM_FILENAME_BASE}.g.dart';",
+		],
+		"description": "Part with filename"
+	},	
+}
+

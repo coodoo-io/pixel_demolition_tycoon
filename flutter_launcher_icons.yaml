@@ -1,0 +1,13 @@
+flutter_icons:
+  image_path_ios: "assets/appicon/appicon_1024x1024.png"
+  image_path_android: "assets/appicon/appicon_710x599.png"
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/appicon/appicon_432x432.png"
+  web:
+    generate: true
+    image_path: "assets/appicon/appicon_1024x1024.png"
+    background_color: "#ffffff"
+    theme_color: "#f1f1f1"
