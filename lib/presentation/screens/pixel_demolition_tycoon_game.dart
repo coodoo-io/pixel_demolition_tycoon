@@ -137,5 +137,11 @@ class Pixel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame>
   void render(Canvas canvas) {
     super.render(canvas);
     canvas.drawRect(size.toRect(), Paint()..color = const Color.fromARGB(255, 255, 0, 0));
+    canvas.drawRect(
+      size.toRect(),
+      Paint()
+        ..color = const Color.fromARGB(255, 0, 0, 0)
+        ..style = PaintingStyle.stroke,
+    );
   }
 }
