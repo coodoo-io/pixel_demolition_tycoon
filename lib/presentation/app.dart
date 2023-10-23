@@ -2,6 +2,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:pixel_demolition_tycoon/common/device/app_lifecycle.dart';
+import 'package:pixel_demolition_tycoon/presentation/screens/pixel_demolition_tycoon_game.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -11,7 +12,7 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  final game = FlameGame();
+  final game = PixelDemolitionTycoonGame();
 
   @override
   void initState() {

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flame/flame.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -77,12 +78,14 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
       }
 
       // System chrome
-      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
       if (UiPlatform.isAndroid) {
         // Edge to Edge is not default in android so it must be enabled
         // https://github.com/flutter/flutter/issues/86248
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge, overlays: [SystemUiOverlay.top]);
       }
+
+      Flame.device.fullScreen();
+      Flame.device.setPortrait();
 
       // Initialize Riverpod
       final container = ProviderContainer();
