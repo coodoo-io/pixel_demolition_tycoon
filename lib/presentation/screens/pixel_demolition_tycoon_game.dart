@@ -11,11 +11,35 @@ class PixelDemolitionTycoonGame extends FlameGame {
   int level = 1;
   double money = 0;
   InformationHud hud = InformationHud();
+  List<List<List<int>>> levels = [];
+
+  final List<List<int>> heart = [
+    [0, 1, 1, 0, 0, 1, 1, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [0, 0, 1, 1, 1, 1, 0, 0],
+    [0, 0, 0, 1, 1, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+  ];
+
+  final List<List<int>> circle = [
+    [0, 0, 1, 1, 1, 1, 0, 0],
+    [0, 1, 1, 0, 0, 1, 1, 0],
+    [1, 1, 0, 0, 0, 0, 1, 1],
+    [1, 0, 0, 1, 1, 0, 0, 1],
+    [1, 0, 0, 1, 1, 0, 0, 1],
+    [1, 1, 0, 0, 0, 0, 1, 1],
+    [0, 1, 1, 0, 0, 1, 1, 0],
+    [0, 0, 1, 1, 1, 1, 0, 0],
+  ];
 
   @override
   Future<void> onLoad() async {
-    final heart = PixelHeart(incrementMoney: incrementMoney);
-    add(heart);
+    levels.addAll([heart, circle]);
+    final currentPixelModel = PixelModel(incrementMoney: incrementMoney, pixelList: levels[level - 1]);
+    add(currentPixelModel);
     add(hud);
   }
 
@@ -29,8 +53,9 @@ class PixelDemolitionTycoonGame extends FlameGame {
     if (activePixelCount == 0) {
       level++;
       money += 100;
-      final heart = PixelHeart(incrementMoney: incrementMoney);
-      add(heart);
+      final nextLevel = levels.length >= level ? level : 1;
+      final currentPixelModel = PixelModel(incrementMoney: incrementMoney, pixelList: levels[nextLevel - 1]);
+      add(currentPixelModel);
     }
   }
 
@@ -77,33 +102,24 @@ class InformationHud extends TextBoxComponent with HasGameRef<PixelDemolitionTyc
   }
 }
 
-class PixelHeart extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame> {
-  PixelHeart({required this.incrementMoney});
+class PixelModel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame> {
+  PixelModel({required this.incrementMoney, required this.pixelList});
 
   final VoidCallback incrementMoney;
-  final List<List<int>> heartShape = [
-    [0, 1, 1, 0, 0, 1, 1, 0],
-    [1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 1, 1, 1, 1, 1, 1, 0],
-    [0, 0, 1, 1, 1, 1, 0, 0],
-    [0, 0, 0, 1, 1, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-  ];
+  final List<List<int>> pixelList;
 
   @override
   Future<void> onLoad() async {
     final screenWidth = gameRef.size.x;
     final screenHeight = gameRef.size.y;
-    final heartWidth = heartShape[0].length * pixelSize;
-    final heartHeight = heartShape.length * pixelSize;
+    final heartWidth = pixelList[0].length * pixelSize;
+    final heartHeight = pixelList.length * pixelSize;
     final offsetX = (screenWidth - heartWidth) / 2;
     final offsetY = (screenHeight - heartHeight) / 2;
 
-    for (var y = 0; y < heartShape.length; y++) {
-      for (var x = 0; x < heartShape[y].length; x++) {
-        if (heartShape[y][x] == 1) {
+    for (var y = 0; y < pixelList.length; y++) {
+      for (var x = 0; x < pixelList[y].length; x++) {
+        if (pixelList[y][x] == 1) {
           final pixel = Pixel(incrementMoney: incrementMoney, health: 1.0 * gameRef.level)
             ..position.setValues(x * pixelSize + offsetX, y * pixelSize + offsetY);
           add(pixel);
