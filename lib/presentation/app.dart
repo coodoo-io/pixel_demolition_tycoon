@@ -31,6 +31,6 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
-    return GameWidget(game: game);
+    return SafeArea(child: GameWidget(game: game));
   }
 }
