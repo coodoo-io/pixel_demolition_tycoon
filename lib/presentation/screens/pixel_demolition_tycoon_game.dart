@@ -3,10 +3,11 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
-double pixelSize = 20.0;
+double pixelSize = 40.0;
 
 class PixelDemolitionTycoonGame extends FlameGame {
   InformationHud hud = InformationHud(level: 1, money: 0);
+  int activePixelCount = 0;
 
   @override
   Future<void> onLoad() async {
@@ -17,6 +18,17 @@ class PixelDemolitionTycoonGame extends FlameGame {
 
   void incrementMoney() {
     hud.money++;
+    activePixelCount--;
+    checkAllPixelsDestroyed();
+  }
+
+  void checkAllPixelsDestroyed() {
+    if (activePixelCount == 0) {
+      hud.level++;
+      hud.money += 100;
+      final heart = PixelHeart(incrementMoney: incrementMoney);
+      add(heart);
+    }
   }
 }
 
@@ -42,13 +54,13 @@ class InformationHud extends TextBoxComponent with HasGameRef<PixelDemolitionTyc
       ],
     );
 
-    TextPainter tp = TextPainter(text: span, textDirection: TextDirection.ltr);
-    tp.layout();
+    TextPainter textPainter = TextPainter(text: span, textDirection: TextDirection.ltr);
+    textPainter.layout();
 
-    double x = gameRef.size.x - tp.width - 10; // Positioning 10 pixels from the right edge
+    double x = gameRef.size.x - textPainter.width - 10; // Positioning 10 pixels from the right edge
     double y = 10; // Positioning 10 pixels from the top edge
 
-    tp.paint(canvas, Offset(x, y));
+    textPainter.paint(canvas, Offset(x, y));
   }
 
   @override
@@ -88,6 +100,7 @@ class PixelHeart extends PositionComponent with HasGameRef<PixelDemolitionTycoon
           final pixel = Pixel(incrementMoney: incrementMoney)
             ..position.setValues(x * pixelSize + offsetX, y * pixelSize + offsetY);
           add(pixel);
+          gameRef.activePixelCount++;
         }
       }
     }
