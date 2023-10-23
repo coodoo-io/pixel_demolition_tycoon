@@ -8,6 +8,7 @@ double pixelSize = 40.0;
 class PixelDemolitionTycoonGame extends FlameGame {
   InformationHud hud = InformationHud(level: 1, money: 0);
   int activePixelCount = 0;
+  int doubleTapStrength = 1;
 
   @override
   Future<void> onLoad() async {
@@ -28,6 +29,13 @@ class PixelDemolitionTycoonGame extends FlameGame {
       hud.money += 100;
       final heart = PixelHeart(incrementMoney: incrementMoney);
       add(heart);
+    }
+  }
+
+  void upgradeTapStrength() {
+    if (hud.money >= 1) {
+      hud.money -= 1;
+      doubleTapStrength++;
     }
   }
 }

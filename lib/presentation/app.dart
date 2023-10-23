@@ -1,4 +1,5 @@
 import 'package:flame/game.dart';
+import 'package:flame/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:pixel_demolition_tycoon/common/device/app_lifecycle.dart';
@@ -31,6 +32,46 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(child: GameWidget(game: game));
+    return SafeArea(
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          body: Stack(
+            children: [
+              GameWidget(game: game),
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    SpriteButton.asset(
+                      path: 'upgrade_button.png',
+                      pressedPath: 'upgrade_button.png',
+                      onPressed: () {
+                        upgradeTapStrength();
+                      },
+                      width: 100,
+                      height: 100,
+                      label: const Text(''),
+                    ),
+                    Text(
+                      'Tap Strength: ${game.doubleTapStrength}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18.0,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void upgradeTapStrength() {
+    game.upgradeTapStrength();
+    setState(() {});
   }
 }
