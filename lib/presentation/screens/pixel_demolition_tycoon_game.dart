@@ -6,9 +6,11 @@ import 'package:flutter/material.dart';
 double pixelSize = 40.0;
 
 class PixelDemolitionTycoonGame extends FlameGame {
-  InformationHud hud = InformationHud(level: 1, money: 0);
   int activePixelCount = 0;
   int doubleTapStrength = 1;
+  int level = 1;
+  double money = 0;
+  InformationHud hud = InformationHud();
 
   @override
   Future<void> onLoad() async {
@@ -18,33 +20,30 @@ class PixelDemolitionTycoonGame extends FlameGame {
   }
 
   void incrementMoney() {
-    hud.money++;
+    money++;
     activePixelCount--;
     checkAllPixelsDestroyed();
   }
 
   void checkAllPixelsDestroyed() {
     if (activePixelCount == 0) {
-      hud.level++;
-      hud.money += 100;
+      level++;
+      money += 100;
       final heart = PixelHeart(incrementMoney: incrementMoney);
       add(heart);
     }
   }
 
   void upgradeTapStrength() {
-    if (hud.money >= 1) {
-      hud.money -= 1;
+    if (money >= 100) {
+      money -= 100;
       doubleTapStrength++;
     }
   }
 }
 
 class InformationHud extends TextBoxComponent with HasGameRef<PixelDemolitionTycoonGame> {
-  int level;
-  int money;
-
-  InformationHud({required this.level, required this.money});
+  InformationHud();
 
   @override
   void render(Canvas canvas) {
@@ -56,9 +55,9 @@ class InformationHud extends TextBoxComponent with HasGameRef<PixelDemolitionTyc
         fontSize: 18.0,
       ),
       children: [
-        TextSpan(text: 'Level: $level'),
+        TextSpan(text: 'Level: ${gameRef.level}'),
         const TextSpan(text: '     '),
-        TextSpan(text: 'Money: $money'),
+        TextSpan(text: 'Money: ${gameRef.money}'),
       ],
     );
 
@@ -105,7 +104,7 @@ class PixelHeart extends PositionComponent with HasGameRef<PixelDemolitionTycoon
     for (var y = 0; y < heartShape.length; y++) {
       for (var x = 0; x < heartShape[y].length; x++) {
         if (heartShape[y][x] == 1) {
-          final pixel = Pixel(incrementMoney: incrementMoney)
+          final pixel = Pixel(incrementMoney: incrementMoney, health: 1.0 * gameRef.level)
             ..position.setValues(x * pixelSize + offsetX, y * pixelSize + offsetY);
           add(pixel);
           gameRef.activePixelCount++;
@@ -116,8 +115,9 @@ class PixelHeart extends PositionComponent with HasGameRef<PixelDemolitionTycoon
 }
 
 class Pixel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame>, TapCallbacks {
-  Pixel({required this.incrementMoney});
+  Pixel({required this.incrementMoney, this.health = 1.0});
   final VoidCallback incrementMoney;
+  double health;
 
   @override
   Future<void> onLoad() async {
@@ -126,8 +126,11 @@ class Pixel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame>
 
   @override
   void onTapUp(TapUpEvent event) {
-    incrementMoney();
-    removeFromParent();
+    health -= gameRef.doubleTapStrength;
+    if (health <= 0) {
+      incrementMoney();
+      removeFromParent();
+    }
   }
 
   @override
