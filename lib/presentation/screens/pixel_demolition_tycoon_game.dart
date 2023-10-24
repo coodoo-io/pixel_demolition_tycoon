@@ -161,6 +161,17 @@ class Pixel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame>
     }
   }
 
+  Future<void> startAudioPlayer() async {
+    print('startAudioPlayer: doesAudioPlay: $doesAudioPlay');
+    if (doesAudioPlay == true) return;
+
+    doesAudioPlay = true;
+    gameRef.laserBeamAudioPool?.start(volume: 0.5);
+
+    await Future.delayed(const Duration(seconds: 1));
+    doesAudioPlay = false;
+  }
+
   void shatter() {
     const pieceCount = 12;
     final random = Random();
@@ -168,16 +179,7 @@ class Pixel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame>
     for (var i = 0; i < pieceCount; i++) {
       final piece = ShatteredPiece(
         initialPosition: position.clone(),
-        audioHandler: () async {
-          if (doesAudioPlay == true) return;
-
-          doesAudioPlay = true;
-          await gameRef.laserBeamAudioPool?.start(volume: 0.8);
-
-          gameRef.laserBeamAudioPool?.currentPlayers.entries.first.value.onPlayerComplete.listen((event) {
-            doesAudioPlay = false;
-          });
-        },
+        audioHandler: startAudioPlayer,
       );
       gameRef.add(piece);
 
@@ -217,6 +219,28 @@ class Pixel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame>
         ..color = const Color.fromARGB(255, 0, 0, 0)
         ..style = PaintingStyle.stroke,
     );
+
+    TextSpan span = TextSpan(
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 18.0,
+      ),
+      children: [
+        TextSpan(text: health.toStringAsFixed(0)),
+      ],
+    );
+
+    TextPainter textPainter = TextPainter(text: span, textDirection: TextDirection.ltr);
+    textPainter.layout();
+
+    // Calculate the coordinates for the center of the text
+    double x = (size.x / 2) - (textPainter.width / 2);
+    double y = (size.y / 2) - (textPainter.height / 2);
+
+    textPainter.paint(
+      canvas,
+      Offset(x, y),
+    );
   }
 }
 
@@ -247,7 +271,7 @@ class ShatteredPiece extends PositionComponent with HasGameRef<PixelDemolitionTy
 
     if (position.y >= gameRef.size.y - pieceSize - beamHeight) {
       removeFromParent();
-      audioHandler();
+      await audioHandler();
     }
   }
 }
