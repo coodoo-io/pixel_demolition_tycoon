@@ -38,31 +38,67 @@ class _AppState extends State<App> {
         body: Stack(
           children: [
             GameWidget(game: game),
-            SafeArea(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
+            Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                SpriteButton.asset(
+                  path: 'upgrade_button.png',
+                  pressedPath: 'upgrade_button.png',
+                  onPressed: () {
+                    upgradeTapStrength();
+                  },
+                  width: 100,
+                  height: 100,
+                  label: const Text(''),
+                ),
+                Text(
+                  'Tap Strength: ${game.doubleTapStrength}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.0,
+                  ),
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.max,
                   children: [
                     SpriteButton.asset(
-                      path: 'upgrade_button.png',
-                      pressedPath: 'upgrade_button.png',
+                      path: 'laserbeam_start_left.png',
+                      pressedPath: 'laserbeam_start_left.png',
                       onPressed: () {
-                        upgradeTapStrength();
+                        // add laser beam sound effect
                       },
-                      width: 100,
-                      height: 100,
+                      width: 50,
+                      height: 80,
                       label: const Text(''),
                     ),
-                    Text(
-                      'Tap Strength: ${game.doubleTapStrength}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18.0,
+                    Expanded(
+                      child: SpriteButton.asset(
+                        path: 'laser_beam.png',
+                        pressedPath: 'laser_beam.png',
+                        onPressed: () {
+                          // add laser beam sound effect
+                        },
+                        width: double.infinity,
+                        height: 100,
+                        label: const Text(''),
+                      ),
+                    ),
+                    Transform.flip(
+                      flipX: true,
+                      child: SpriteButton.asset(
+                        path: 'laserbeam_start_left.png',
+                        pressedPath: 'laserbeam_start_left.png',
+                        onPressed: () {
+                          // add laser beam sound effect
+                        },
+                        width: 50,
+                        height: 80,
+                        label: const Text(''),
                       ),
                     ),
                   ],
                 ),
-              ),
+              ],
             ),
           ],
         ),
