@@ -205,6 +205,7 @@ class Pixel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame>
 
 class ShatteredPiece extends PositionComponent with HasGameRef {
   static const pieceSize = 20.0;
+  static const beamHeight = 70.0;
   final Vector2 initialPosition;
 
   ShatteredPiece(this.initialPosition);
@@ -226,9 +227,8 @@ class ShatteredPiece extends PositionComponent with HasGameRef {
   void update(double dt) {
     super.update(dt);
 
-    // Stop any further movement and rotation once the piece reaches the bottom
-    if (position.y >= gameRef.size.y - pieceSize) {
-      position.y = gameRef.size.y - pieceSize; // Snap position to the bottom
+    if (position.y >= gameRef.size.y - pieceSize - beamHeight) {
+      removeFromParent();
     }
   }
 }
