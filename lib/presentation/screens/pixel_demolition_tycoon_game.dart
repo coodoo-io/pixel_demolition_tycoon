@@ -17,7 +17,6 @@ class PixelDemolitionTycoonGame extends FlameGame {
   List<List<List<int>>> levels = [];
   final Map<double, double> shatterPositions = {}; // Map of X position to Y position
 
-
   final List<List<int>> heart = [
     [0, 1, 1, 0, 0, 1, 1, 0],
     [1, 1, 1, 1, 1, 1, 1, 1],
@@ -160,17 +159,30 @@ class Pixel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame>
 
   void shatter() {
     const pieceCount = 12;
+    final random = Random();
     for (var i = 0; i < pieceCount; i++) {
       final piece = ShatteredPiece(position.clone());
       gameRef.add(piece);
 
-      // Determine the final position based on the bottom of the screen
+      // Random target position at the bottom
+      final targetX = position.x + (random.nextDouble() - 0.5) * 200;
       final targetY = gameRef.size.y - ShatteredPiece.pieceSize;
 
-      // Apply a MoveEffect to animate the pieces falling to the bottom
+      final rotateEffect = RotateEffect.by(
+        random.nextDouble() * 2 * pi, // Random rotation in radians
+        EffectController(
+          duration: 2,
+        ),
+      );
+      piece.add(rotateEffect);
+
+      // Apply a MoveEffect to animate the pieces falling to the random position
       final fallEffect = MoveEffect.to(
-        Vector2(position.x, targetY),
-        EffectController(duration: 1),
+        Vector2(targetX, targetY),
+        EffectController(
+          duration: 1.5,
+          curve: Curves.fastOutSlowIn,
+        ), // will links und rechts eine art strahler wie in star track, dass die teile auf den boden auffängt und dann schreddert
       );
       piece.add(fallEffect);
     }
@@ -214,9 +226,9 @@ class ShatteredPiece extends PositionComponent with HasGameRef {
   void update(double dt) {
     super.update(dt);
 
-    // Stop any further movement once the piece reaches the bottom
+    // Stop any further movement and rotation once the piece reaches the bottom
     if (position.y >= gameRef.size.y - pieceSize) {
-      removeFromParent();
+      position.y = gameRef.size.y - pieceSize; // Snap position to the bottom
     }
   }
 }
