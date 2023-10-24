@@ -4,6 +4,7 @@ import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
+import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 
 double pixelSize = 40.0;
@@ -16,6 +17,7 @@ class PixelDemolitionTycoonGame extends FlameGame {
   InformationHud hud = InformationHud();
   List<List<List<int>>> levels = [];
   final Map<double, double> shatterPositions = {}; // Map of X position to Y position
+  AudioPool? laserBeamAudioPool;
 
   final List<List<int>> heart = [
     [0, 1, 1, 0, 0, 1, 1, 0],
@@ -45,6 +47,7 @@ class PixelDemolitionTycoonGame extends FlameGame {
     final currentPixelModel = PixelModel(incrementMoney: incrementMoney, pixelList: levels[level - 1]);
     add(currentPixelModel);
     add(hud);
+    laserBeamAudioPool = await FlameAudio.createPool('laser_beam.mp3', minPlayers: 1, maxPlayers: 1);
   }
 
   void incrementMoney() {
@@ -141,6 +144,7 @@ class Pixel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame>
   Pixel({required this.incrementMoney, this.health = 1.0});
   final VoidCallback incrementMoney;
   double health;
+  bool doesAudioPlay = false;
 
   @override
   Future<void> onLoad() async {
@@ -160,8 +164,21 @@ class Pixel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame>
   void shatter() {
     const pieceCount = 12;
     final random = Random();
+
     for (var i = 0; i < pieceCount; i++) {
-      final piece = ShatteredPiece(position.clone());
+      final piece = ShatteredPiece(
+        initialPosition: position.clone(),
+        audioHandler: () async {
+          if (doesAudioPlay == true) return;
+
+          doesAudioPlay = true;
+          await gameRef.laserBeamAudioPool?.start(volume: 0.8);
+
+          gameRef.laserBeamAudioPool?.currentPlayers.entries.first.value.onPlayerComplete.listen((event) {
+            doesAudioPlay = false;
+          });
+        },
+      );
       gameRef.add(piece);
 
       // Random target position at the bottom
@@ -203,12 +220,13 @@ class Pixel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame>
   }
 }
 
-class ShatteredPiece extends PositionComponent with HasGameRef {
+class ShatteredPiece extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame> {
+  ShatteredPiece({required this.initialPosition, required this.audioHandler});
+
   static const pieceSize = 20.0;
   static const beamHeight = 70.0;
   final Vector2 initialPosition;
-
-  ShatteredPiece(this.initialPosition);
+  final Function audioHandler;
 
   @override
   Future<void> onLoad() async {
@@ -224,11 +242,12 @@ class ShatteredPiece extends PositionComponent with HasGameRef {
   }
 
   @override
-  void update(double dt) {
+  Future<void> update(double dt) async {
     super.update(dt);
 
     if (position.y >= gameRef.size.y - pieceSize - beamHeight) {
       removeFromParent();
+      audioHandler();
     }
   }
 }
