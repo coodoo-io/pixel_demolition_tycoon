@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:flame/components.dart';
+import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +15,8 @@ class PixelDemolitionTycoonGame extends FlameGame {
   double money = 0;
   InformationHud hud = InformationHud();
   List<List<List<int>>> levels = [];
+  final Map<double, double> shatterPositions = {}; // Map of X position to Y position
+
 
   final List<List<int>> heart = [
     [0, 1, 1, 0, 0, 1, 1, 0],
@@ -65,6 +70,9 @@ class PixelDemolitionTycoonGame extends FlameGame {
       doubleTapStrength++;
     }
   }
+
+  @override
+  Color backgroundColor() => const Color(0xff2289be);
 }
 
 class InformationHud extends TextBoxComponent with HasGameRef<PixelDemolitionTycoonGame> {
@@ -90,7 +98,7 @@ class InformationHud extends TextBoxComponent with HasGameRef<PixelDemolitionTyc
     textPainter.layout();
 
     double x = gameRef.size.x - textPainter.width - 10; // Positioning 10 pixels from the right edge
-    double y = 10; // Positioning 10 pixels from the top edge
+    double y = 60; // Positioning 10 pixels from the top edge
 
     textPainter.paint(canvas, Offset(x, y));
   }
@@ -98,7 +106,7 @@ class InformationHud extends TextBoxComponent with HasGameRef<PixelDemolitionTyc
   @override
   void drawBackground(Canvas c) {
     Rect rect = Rect.fromLTWH(0, 0, width, height);
-    c.drawRect(rect, Paint()..color = const Color.fromARGB(255, 0, 0, 0));
+    c.drawRect(rect, Paint()..color = const Color(0xff2289be));
   }
 }
 
@@ -145,9 +153,30 @@ class Pixel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame>
     health -= gameRef.doubleTapStrength;
     if (health <= 0) {
       incrementMoney();
+      shatter();
       removeFromParent();
     }
   }
+
+  void shatter() {
+    const pieceCount = 12;
+    for (var i = 0; i < pieceCount; i++) {
+      final piece = ShatteredPiece(position.clone());
+      gameRef.add(piece);
+
+      // Determine the final position based on the bottom of the screen
+      final targetY = gameRef.size.y - ShatteredPiece.pieceSize;
+
+      // Apply a MoveEffect to animate the pieces falling to the bottom
+      final fallEffect = MoveEffect.to(
+        Vector2(position.x, targetY),
+        EffectController(duration: 1),
+      );
+      piece.add(fallEffect);
+    }
+  }
+
+  double randomSigned() => (Random().nextDouble() - 0.5) * 2;
 
   @override
   void render(Canvas canvas) {
@@ -159,5 +188,35 @@ class Pixel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame>
         ..color = const Color.fromARGB(255, 0, 0, 0)
         ..style = PaintingStyle.stroke,
     );
+  }
+}
+
+class ShatteredPiece extends PositionComponent with HasGameRef {
+  static const pieceSize = 20.0;
+  final Vector2 initialPosition;
+
+  ShatteredPiece(this.initialPosition);
+
+  @override
+  Future<void> onLoad() async {
+    size.setValues(pieceSize, pieceSize);
+    position.setFrom(initialPosition);
+  }
+
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
+    final paint = Paint()..color = Colors.red;
+    canvas.drawRect(size.toRect(), paint);
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+
+    // Stop any further movement once the piece reaches the bottom
+    if (position.y >= gameRef.size.y - pieceSize) {
+      removeFromParent();
+    }
   }
 }

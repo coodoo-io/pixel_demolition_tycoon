@@ -32,14 +32,14 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          body: Stack(
-            children: [
-              GameWidget(game: game),
-              Center(
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        body: Stack(
+          children: [
+            GameWidget(game: game),
+            SafeArea(
+              child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -63,8 +63,8 @@ class _AppState extends State<App> {
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
