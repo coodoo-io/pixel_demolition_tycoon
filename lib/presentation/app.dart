@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flame/game.dart';
 import 'package:flame/widgets.dart';
 import 'package:flutter/material.dart';
@@ -38,6 +40,7 @@ class _AppState extends State<App> {
         body: Stack(
           children: [
             GameWidget(game: game),
+            HudWidget(game: game),
             Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -50,13 +53,6 @@ class _AppState extends State<App> {
                   width: 100,
                   height: 100,
                   label: const Text(''),
-                ),
-                Text(
-                  'Tap Strength: ${game.doubleTapStrength}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18.0,
-                  ),
                 ),
                 Row(
                   mainAxisSize: MainAxisSize.max,
@@ -109,5 +105,43 @@ class _AppState extends State<App> {
   void upgradeTapStrength() {
     game.upgradeTapStrength();
     setState(() {});
+  }
+}
+
+class HudWidget extends StatefulWidget {
+  const HudWidget({
+    super.key,
+    required this.game,
+  });
+
+  final PixelDemolitionTycoonGame game;
+
+  @override
+  State<HudWidget> createState() => _HudWidgetState();
+}
+
+class _HudWidgetState extends State<HudWidget> {
+  @override
+  Widget build(BuildContext context) {
+    const hudTextStyle = TextStyle(
+      color: Colors.white,
+      fontSize: 17,
+      fontWeight: FontWeight.bold,
+    );
+
+    Timer.periodic(const Duration(milliseconds: 200), (timer) {
+      setState(() {});
+    });
+    return SafeArea(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Text('Level: ${widget.game.level}', style: hudTextStyle),
+          Text('Strength: ${widget.game.tapStrength}', style: hudTextStyle),
+          Text('Money: ${widget.game.money.toStringAsFixed(0)}', style: hudTextStyle),
+        ],
+      ),
+    );
   }
 }

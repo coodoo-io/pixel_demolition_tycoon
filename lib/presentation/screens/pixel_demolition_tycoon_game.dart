@@ -11,10 +11,9 @@ double pixelSize = 40.0;
 
 class PixelDemolitionTycoonGame extends FlameGame {
   int activePixelCount = 0;
-  int doubleTapStrength = 1;
+  int tapStrength = 1;
   int level = 1;
   double money = 0;
-  InformationHud hud = InformationHud();
   List<List<List<int>>> levels = [];
   final Map<double, double> shatterPositions = {}; // Map of X position to Y position
   AudioPool? laserBeamAudioPool;
@@ -46,7 +45,6 @@ class PixelDemolitionTycoonGame extends FlameGame {
     levels.addAll([heart, circle]);
     final currentPixelModel = PixelModel(incrementMoney: incrementMoney, pixelList: levels[level - 1]);
     add(currentPixelModel);
-    add(hud);
     laserBeamAudioPool = await FlameAudio.createPool('laser_beam.mp3', minPlayers: 1, maxPlayers: 1);
   }
 
@@ -69,47 +67,12 @@ class PixelDemolitionTycoonGame extends FlameGame {
   void upgradeTapStrength() {
     if (money >= 100) {
       money -= 100;
-      doubleTapStrength++;
+      tapStrength++;
     }
   }
 
   @override
   Color backgroundColor() => const Color(0xff2289be);
-}
-
-class InformationHud extends TextBoxComponent with HasGameRef<PixelDemolitionTycoonGame> {
-  InformationHud();
-
-  @override
-  void render(Canvas canvas) {
-    super.render(canvas);
-
-    TextSpan span = TextSpan(
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 18.0,
-      ),
-      children: [
-        TextSpan(text: 'Level: ${gameRef.level}'),
-        const TextSpan(text: '     '),
-        TextSpan(text: 'Money: ${gameRef.money}'),
-      ],
-    );
-
-    TextPainter textPainter = TextPainter(text: span, textDirection: TextDirection.ltr);
-    textPainter.layout();
-
-    double x = gameRef.size.x - textPainter.width - 10; // Positioning 10 pixels from the right edge
-    double y = 60; // Positioning 10 pixels from the top edge
-
-    textPainter.paint(canvas, Offset(x, y));
-  }
-
-  @override
-  void drawBackground(Canvas c) {
-    Rect rect = Rect.fromLTWH(0, 0, width, height);
-    c.drawRect(rect, Paint()..color = const Color(0xff2289be));
-  }
 }
 
 class PixelModel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame> {
@@ -153,7 +116,7 @@ class Pixel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame>
 
   @override
   void onTapUp(TapUpEvent event) {
-    health -= gameRef.doubleTapStrength;
+    health -= gameRef.tapStrength;
     if (health <= 0) {
       incrementMoney();
       shatter();
