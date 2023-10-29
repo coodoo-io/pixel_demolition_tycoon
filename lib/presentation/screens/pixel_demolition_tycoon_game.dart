@@ -1,3 +1,4 @@
+import 'dart:developer' as dev;
 import 'dart:math';
 
 import 'package:flame/components.dart';
@@ -5,9 +6,11 @@ import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flame_audio/flame_audio.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Image;
+import 'package:flutter/services.dart';
+import 'package:image/image.dart' as img;
 
-double pixelSize = 40.0;
+double pixelSize = 28.0;
 
 class PixelDemolitionTycoonGame extends FlameGame {
   int activePixelCount = 0;
@@ -18,34 +21,56 @@ class PixelDemolitionTycoonGame extends FlameGame {
   final Map<double, double> shatterPositions = {}; // Map of X position to Y position
   AudioPool? laserBeamAudioPool;
 
-  final List<List<int>> heart = [
-    [0, 1, 1, 0, 0, 1, 1, 0],
-    [1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 1, 1, 1, 1, 1, 1, 0],
-    [0, 0, 1, 1, 1, 1, 0, 0],
-    [0, 0, 0, 1, 1, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-  ];
-
-  final List<List<int>> circle = [
-    [0, 0, 1, 1, 1, 1, 0, 0],
-    [0, 1, 1, 0, 0, 1, 1, 0],
-    [1, 1, 0, 0, 0, 0, 1, 1],
-    [1, 0, 0, 1, 1, 0, 0, 1],
-    [1, 0, 0, 1, 1, 0, 0, 1],
-    [1, 1, 0, 0, 0, 0, 1, 1],
-    [0, 1, 1, 0, 0, 1, 1, 0],
-    [0, 0, 1, 1, 1, 1, 0, 0],
-  ];
-
   @override
   Future<void> onLoad() async {
-    levels.addAll([heart, circle]);
+    levels.add(await loadImageAndGetGreyScalePixels('assets/images/house.png'));
     final currentPixelModel = PixelModel(incrementMoney: incrementMoney, pixelList: levels[level - 1]);
     add(currentPixelModel);
     laserBeamAudioPool = await FlameAudio.createPool('laser_beam.mp3', minPlayers: 1, maxPlayers: 1);
+  }
+
+  Future<List<List<int>>> loadImageAndGetGreyScalePixels(String imagePath) async {
+    final ByteData data = await rootBundle.load(imagePath);
+    List<int> bytes = data.buffer.asUint8List();
+    final img.Image? image = img.decodeImage(Uint8List.fromList(bytes));
+
+    if (image == null) return <List<int>>[];
+
+    final img.Image resizedImage = resizeImage(image);
+
+    final width = resizedImage.width;
+    final height = resizedImage.height;
+    final List<List<int>> pixelList = [];
+
+    for (var y = 0; y < height; y++) {
+      final List<int> row = [];
+      for (var x = 0; x < width; x++) {
+        final img.Pixel pixel = resizedImage.getPixel(x, y);
+        final num red = pixel.r;
+        final num green = pixel.g;
+        final num blue = pixel.b;
+        final int greyScale = ((red + green + blue) / 3).round();
+        row.add(greyScale);
+      }
+      pixelList.add(row);
+    }
+
+    dev.log('pixelList: $pixelList');
+    return pixelList;
+  }
+
+  img.Image resizeImage(img.Image image) {
+    int? newWidth;
+    int? newHeight;
+    const scale = 12;
+
+    if (image.width > image.height) {
+      newWidth = scale;
+    } else {
+      newHeight = scale;
+    }
+
+    return img.copyResize(image, width: newWidth, height: newHeight);
   }
 
   void incrementMoney() {
@@ -92,8 +117,13 @@ class PixelModel extends PositionComponent with HasGameRef<PixelDemolitionTycoon
 
     for (var y = 0; y < pixelList.length; y++) {
       for (var x = 0; x < pixelList[y].length; x++) {
-        if (pixelList[y][x] == 1) {
-          final pixel = Pixel(incrementMoney: incrementMoney, health: 1.0 * gameRef.level)
+        if (pixelList[y][x] != 0) {
+          const double baseValue = 1;
+          final double healthFactor = baseValue + ((pixelList[y][x] / 255.0) * gameRef.level);
+          final int roundedHealth = healthFactor.round();
+
+          final Color colorFactor = Color.lerp(Colors.red, Colors.green, healthFactor)!;
+          final pixel = Pixel(incrementMoney: incrementMoney, health: roundedHealth, color: colorFactor)
             ..position.setValues(x * pixelSize + offsetX, y * pixelSize + offsetY);
           add(pixel);
           gameRef.activePixelCount++;
@@ -104,10 +134,11 @@ class PixelModel extends PositionComponent with HasGameRef<PixelDemolitionTycoon
 }
 
 class Pixel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame>, TapCallbacks {
-  Pixel({required this.incrementMoney, this.health = 1.0});
+  Pixel({required this.incrementMoney, this.health = 1, this.color = Colors.red});
   final VoidCallback incrementMoney;
-  double health;
+  int health;
   bool doesAudioPlay = false;
+  final Color color;
 
   @override
   Future<void> onLoad() async {
@@ -143,6 +174,7 @@ class Pixel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame>
       final piece = ShatteredPiece(
         initialPosition: position.clone(),
         audioHandler: startAudioPlayer,
+        color: color,
       );
       gameRef.add(piece);
 
@@ -174,8 +206,9 @@ class Pixel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame>
 
   @override
   void render(Canvas canvas) {
+    final newColor = Color.lerp(color, Colors.white, health / 100)!;
     super.render(canvas);
-    canvas.drawRect(size.toRect(), Paint()..color = const Color.fromARGB(255, 255, 0, 0));
+    canvas.drawRect(size.toRect(), Paint()..color = newColor);
     canvas.drawRect(
       size.toRect(),
       Paint()
@@ -208,12 +241,13 @@ class Pixel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame>
 }
 
 class ShatteredPiece extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame> {
-  ShatteredPiece({required this.initialPosition, required this.audioHandler});
+  ShatteredPiece({required this.initialPosition, required this.audioHandler, this.color = Colors.red});
 
   static const pieceSize = 20.0;
   static const beamHeight = 70.0;
   final Vector2 initialPosition;
   final Function audioHandler;
+  final Color color;
 
   @override
   Future<void> onLoad() async {
@@ -224,7 +258,7 @@ class ShatteredPiece extends PositionComponent with HasGameRef<PixelDemolitionTy
   @override
   void render(Canvas canvas) {
     super.render(canvas);
-    final paint = Paint()..color = Colors.red;
+    final paint = Paint()..color = color;
     canvas.drawRect(size.toRect(), paint);
   }
 
