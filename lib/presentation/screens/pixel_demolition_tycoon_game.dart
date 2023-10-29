@@ -121,8 +121,7 @@ class PixelModel extends PositionComponent with HasGameRef<PixelDemolitionTycoon
           const double baseValue = 1;
           final double healthFactor = baseValue + ((pixelList[y][x] / 255.0) * gameRef.level);
           final int roundedHealth = healthFactor.round();
-
-          final Color colorFactor = Color.lerp(Colors.red, Colors.green, healthFactor)!;
+          final Color colorFactor = Color.lerp(Colors.red, Colors.green, pixelList[y][x] / 255.0)!;
           final pixel = Pixel(incrementMoney: incrementMoney, health: roundedHealth, color: colorFactor)
             ..position.setValues(x * pixelSize + offsetX, y * pixelSize + offsetY);
           add(pixel);
@@ -206,7 +205,9 @@ class Pixel extends PositionComponent with HasGameRef<PixelDemolitionTycoonGame>
 
   @override
   void render(Canvas canvas) {
-    final newColor = Color.lerp(color, Colors.white, health / 100)!;
+    final newOpacity = (health / 1).clamp(0.1, 1.0);
+    final newColor = color.withOpacity(newOpacity);
+
     super.render(canvas);
     canvas.drawRect(size.toRect(), Paint()..color = newColor);
     canvas.drawRect(
