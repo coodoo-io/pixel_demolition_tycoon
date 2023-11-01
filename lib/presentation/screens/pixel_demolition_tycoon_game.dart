@@ -24,6 +24,7 @@ class PixelDemolitionTycoonGame extends FlameGame {
   @override
   Future<void> onLoad() async {
     levels.add(await loadImageAndGetGreyScalePixels('assets/images/house.png'));
+    levels.add(await loadImageAndGetGreyScalePixels('assets/images/teeth.png'));
     final currentPixelModel = PixelModel(incrementMoney: incrementMoney, pixelList: levels[level - 1]);
     add(currentPixelModel);
     laserBeamAudioPool = await FlameAudio.createPool('laser_beam.mp3', minPlayers: 1, maxPlayers: 1);
